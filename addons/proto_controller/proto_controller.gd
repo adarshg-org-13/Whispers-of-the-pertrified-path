@@ -1,5 +1,7 @@
 extends CharacterBody3D
-
+#I used this part of script from brackeys ie proton controller 
+#Thanks brackeys!!!!
+#implemeted basic movement from arrow keys to wasd keys 
 ## Can we move around?
 @export var can_move : bool = true
 ## Are we affected by gravity?
