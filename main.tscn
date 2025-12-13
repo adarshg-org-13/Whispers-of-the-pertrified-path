@@ -63,5 +63,6 @@ use_collision = true
 size = Vector3(91.07332, 2.324707, 79.95448)
 
 [node name="ProtoController" parent="." instance=ExtResource("1_ig7tw")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.27934, 3.2155552, -10.110621)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.27934, 4.1561775, -1.505085)
 can_sprint = true
+jump_velocity = 5.0
