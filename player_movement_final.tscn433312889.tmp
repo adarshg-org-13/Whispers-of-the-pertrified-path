@@ -1,0 +1,52 @@
+[gd_scene load_steps=7 format=3 uid="uid://k74kvvhtn6bm"]
+
+[ext_resource type="Script" uid="uid://jdoaidyrqn77" path="res://main_player_controller script.gd" id="1_mrqao"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_mrqao"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_64hxl"]
+sky_material = SubResource("ProceduralSkyMaterial_mrqao")
+
+[sub_resource type="Environment" id="Environment_gebwf"]
+background_mode = 2
+sky = SubResource("Sky_64hxl")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_64hxl"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_mrqao"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_gebwf")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Player" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5379362, 0)
+script = ExtResource("1_mrqao")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.87147415, 0)
+mesh = SubResource("CapsuleMesh_64hxl")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.87147415, 0)
+shape = SubResource("CapsuleShape3D_mrqao")
+
+[node name="Head" type="Node3D" parent="Player"]
+
+[node name="Camera3D" type="Camera3D" parent="Player/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.47314358, 1.5046415, -0.3396814)
+current = true
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9377899, -0.8136933, 0.6263428)
+use_collision = true
+size = Vector3(15.667694, 0.001, 16.642822)
