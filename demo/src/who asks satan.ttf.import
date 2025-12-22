@@ -3,12 +3,12 @@
 importer="font_data_dynamic"
 type="FontFile"
 uid="uid://xyvvy721xb1j"
-path="res://.godot/imported/who asks satan.ttf-4e1f6b3421157333c77a4b87fa8bfab1.fontdata"
+path="res://.godot/imported/who asks satan.ttf-f1833753ee182100089fa9b2b7f1721f.fontdata"
 
 [deps]
 
-source_file="res://demo/assets/fonts/who asks satan.ttf"
-dest_files=["res://.godot/imported/who asks satan.ttf-4e1f6b3421157333c77a4b87fa8bfab1.fontdata"]
+source_file="res://demo/src/who asks satan.ttf"
+dest_files=["res://.godot/imported/who asks satan.ttf-f1833753ee182100089fa9b2b7f1721f.fontdata"]
 
 [params]
 

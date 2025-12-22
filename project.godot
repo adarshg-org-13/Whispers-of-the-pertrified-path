@@ -11,8 +11,9 @@ config_version=5
 [application]
 
 config/name="The whispers of the pertrified path"
-run/main_scene="uid://be7r3i1shnwho"
+run/main_scene="uid://lglumv0sri21"
 config/features=PackedStringArray("4.5", "Mobile")
+run/low_processor_mode=true
 config/icon="res://icon.svg"
 
 [display]
