@@ -4,7 +4,7 @@ extends CharacterBody3D
 var speed
 const WALK_SPEED = 5.0
 const SPRINT_SPEED = 8.0
-const JUMP_VELOCITY = 4.8
+const JUMP_VELOCITY = 5
 const SENSITIVITY = 0.004
 
 #bob variables
@@ -17,7 +17,7 @@ const BASE_FOV = 75.0
 const FOV_CHANGE = 1.5
 
 # Get the gravity from the project settings to be synced with RigidBody nodes.
-var gravity = 9.8
+var gravity = 10.1
 
 @onready var head = $Head
 @onready var camera = $Head/Camera3D
