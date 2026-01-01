@@ -19,3 +19,8 @@ func _on_back_button_pressed() -> void:
 func _input(event: InputEvent) -> void:
 	if Input.is_action_pressed("esc"):
 		get_tree().change_scene_to_file("res://main_menu.tscn")
+
+
+func _on_button_pressed() -> void:
+	pass # Replace with function body.
+	get_tree().change_scene_to_file("res://tutorial_scene.tscn")

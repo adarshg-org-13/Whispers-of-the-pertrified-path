@@ -32,4 +32,6 @@ func _on_restart_pressed():
 	get_tree().reload_current_scene()
 	
 func _on_quit_pressed():
+	get_tree().paused = false  # Unpause the game
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE  # Show cursor for main menu
 	get_tree().change_scene_to_file("res://main_menu.tscn")
