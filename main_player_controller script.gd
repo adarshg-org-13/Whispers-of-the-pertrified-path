@@ -41,9 +41,7 @@ func _unhandled_input(event):
 		head.rotate_y(-event.relative.x * SENSITIVITY)
 		camera.rotate_x(-event.relative.y * SENSITIVITY)
 		camera.rotation.x = clamp(camera.rotation.x, deg_to_rad(-85), deg_to_rad(90))
-func _physics_process(delta):
-	$"Ui (in game)2/VBoxContainer/Interact text".hide()
-	
+func _physics_process(delta):	
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 		
