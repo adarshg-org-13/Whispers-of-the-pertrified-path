@@ -1,0 +1,143 @@
+[gd_scene load_steps=10 format=3 uid="uid://b8kcwsk2m27sj"]
+
+[ext_resource type="Script" uid="uid://jdoaidyrqn77" path="res://main_player_controller script.gd" id="1_i3pqv"]
+[ext_resource type="Texture2D" uid="uid://fy2s00fm2l64" path="res://Game images/bg1.webp" id="2_hqtel"]
+[ext_resource type="FontFile" uid="uid://du4qglpdkbcn" path="res://fonts/Montserrat-Black.ttf" id="3_sweqy"]
+[ext_resource type="Script" uid="uid://dv2h76ebnfomk" path="res://day_script_show_only.gd" id="4_hqtel"]
+[ext_resource type="Script" uid="uid://dfwwgequ3fosw" path="res://Scripts/WashingUI.gd" id="5_2hs0m"]
+[ext_resource type="Texture2D" uid="uid://bpb37pd8xln2e" path="res://Game images/coin_icon.png" id="5_sweqy"]
+[ext_resource type="Script" uid="uid://dqt5yfqnh41cu" path="res://Scripts/CarWashable.gd" id="7_1jxqw"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_2hs0m"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1jxqw"]
+
+[node name="Player" type="CharacterBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05706334, 0)
+script = ExtResource("1_i3pqv")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.87147415, 0)
+mesh = SubResource("CapsuleMesh_2hs0m")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.87147415, 0)
+shape = SubResource("CapsuleShape3D_1jxqw")
+
+[node name="Head" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5350605, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04114008, 0)
+current = true
+fov = 72.2
+
+[node name="RayCast3D" type="RayCast3D" parent="Head/Camera3D"]
+target_position = Vector3(0, 0, -4)
+
+[node name="Ui (in game)2" type="CanvasLayer" parent="."]
+script = ExtResource("5_2hs0m")
+
+[node name="TextureRect" type="TextureRect" parent="Ui (in game)2"]
+modulate = Color(1, 1, 1, 0.38039216)
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -199.0
+offset_top = 13.0
+offset_right = -16.0
+offset_bottom = 78.0
+grow_horizontal = 0
+texture = ExtResource("2_hqtel")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="Ui (in game)2"]
+offset_left = 1020.0
+offset_top = 15.0
+offset_right = 1169.0
+offset_bottom = 75.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_sweqy")
+theme_override_font_sizes/font_size = 48
+text = "Day 0"
+script = ExtResource("4_hqtel")
+
+[node name="Crosshair" type="Label" parent="Ui (in game)2"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -4.5
+offset_top = -41.0
+offset_right = 4.5
+offset_bottom = -3.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_sweqy")
+theme_override_font_sizes/font_size = 30
+text = "."
+
+[node name="TextureRect2" type="TextureRect" parent="Ui (in game)2"]
+modulate = Color(1, 1, 1, 0.38039216)
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -1192.0
+offset_top = 8.999999
+offset_right = -1076.6666
+offset_bottom = 50.333336
+grow_horizontal = 0
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("2_hqtel")
+expand_mode = 1
+
+[node name="TextureRect3" type="TextureRect" parent="Ui (in game)2"]
+offset_left = -12.0
+offset_top = 5.0
+offset_right = 52.666664
+offset_bottom = 53.666668
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("5_sweqy")
+expand_mode = 1
+
+[node name="PromptLabel" type="Label" parent="Ui (in game)2"]
+offset_left = 299.0
+offset_top = 526.0
+offset_right = 905.0
+offset_bottom = 620.0
+
+[node name="WashProgressBar" type="ProgressBar" parent="Ui (in game)2"]
+offset_left = 332.0
+offset_top = 580.0
+offset_right = 866.0
+offset_bottom = 607.0
+
+[node name="MoneyPopup" type="Label" parent="Ui (in game)2"]
+offset_left = 540.0
+offset_top = 398.0
+offset_right = 663.0
+offset_bottom = 448.0
+theme_override_fonts/font = ExtResource("3_sweqy")
+theme_override_font_sizes/font_size = 40
+
+[node name="MoneyLabel" type="Label" parent="Ui (in game)2"]
+offset_left = 62.0
+offset_top = 11.0
+offset_right = 186.0
+offset_bottom = 67.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_sweqy")
+theme_override_font_sizes/font_size = 45
+text = "$0"
+
+[node name="WashingSystem" type="Node" parent="."]
+script = ExtResource("7_1jxqw")
+max_dirt_level = null
+money_per_wash = null
+wash_speed = null
+dirt_spots_count = null

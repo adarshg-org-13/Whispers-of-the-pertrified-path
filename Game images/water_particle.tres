@@ -1,0 +1,11 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://d3d7ajt3u66rt"]
+
+[ext_resource type="Texture2D" uid="uid://c61yell42hd1s" path="res://Game images/water_particle.png" id="1_5k653"]
+
+[resource]
+render_priority = 2
+transparency = 1
+shading_mode = 0
+albedo_texture = ExtResource("1_5k653")
+billboard_mode = 1
+grow = true
