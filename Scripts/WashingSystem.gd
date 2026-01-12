@@ -141,11 +141,11 @@ func start_washing():
 	if current_washable_car and current_washable_car.has_signal("car_washed"):
 		if not current_washable_car.car_washed.is_connected(_on_car_washed):
 			current_washable_car.car_washed.connect(_on_car_washed)
-			print("  Connected to car_washed signal")
+			print("  Connected to car_washed signal")
 
-	# --- PARTICLE ACTIVATION CODE ---
+	# --- PARTICLE ACTIVATION CODE (FIXED) ---
 	if water_particles_scene and not active_water_particles:
-		var attach_target = find_nearest_node3d_parent(self) 
+		var attach_target = find_nearest_node3d_parent(self)  
 		
 		if attach_target and is_instance_valid(attach_target):
 			
@@ -157,7 +157,7 @@ func start_washing():
 				
 				# Position the particles relative to the attach_target (Player/Body)
 				active_water_particles.global_transform = attach_target.global_transform
-				active_water_particles.position = Vector3(0, 1.0, 0.5) 
+				active_water_particles.position = Vector3(0, 1.0, 0.5)  
 				
 				active_water_particles.emitting = true
 				
@@ -199,7 +199,7 @@ func _on_car_washed(money_earned):
 	print("💰💰💰 CAR WASHED! Earned: $", money_earned)
 	
 	total_money += money_earned
-	print("   Total money now: $", total_money)
+	print("    Total money now: $", total_money)
 	
 	update_money_ui()
 	show_money_popup(money_earned)
@@ -215,7 +215,8 @@ func update_money_ui():
 		return
 	
 	var money_label = ui.get_node_or_null("MoneyLabel")
-	if money_label:
+	
+	if money_label and is_instance_valid(money_label):
 		var new_text = "Money: $" + str(total_money)
 		money_label.text = new_text
 		money_label.visible = true
@@ -227,7 +228,7 @@ func update_money_ui():
 		tween.tween_property(money_label, "modulate", Color.WHITE, 0.25).set_ease(Tween.EASE_OUT)
 		
 	else:
-		print("   ❌ MoneyLabel not found")
+		print("    ❌ MoneyLabel not found or is invalid.")
 
 func update_hold_prompt():
 	if not ui:
@@ -258,7 +259,6 @@ func update_ui_display():
 		# Washing mode
 		if progress_bar:
 			progress_bar.visible = true
-			print("📊 Progress bar: VISIBLE")
 		
 		if prompt_label:
 			prompt_label.text = "Washing... (Release E to stop)"
@@ -287,7 +287,7 @@ func show_money_popup(amount):
 		return
 	
 	var popup = ui.get_node_or_null("MoneyPopup")
-	if popup:
+	if popup and is_instance_valid(popup):
 		popup.text = "+$" + str(amount)
 		popup.visible = true
 		popup.modulate = Color(0, 1, 0, 1)
