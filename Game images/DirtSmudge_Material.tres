@@ -1,6 +1,6 @@
 [gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://cki1fpfexw67j"]
 
-[ext_resource type="Texture2D" uid="uid://c8mtavrif35eh" path="res://Game images/dirt_p1-removebg-preview.png" id="1_il36u"]
+[ext_resource type="Texture2D" uid="uid://fuc7lbb0wb0m" path="res://Game images/dirt_png-removebg-preview.png" id="1_il36u"]
 
 [resource]
 resource_local_to_scene = true
