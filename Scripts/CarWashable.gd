@@ -11,6 +11,15 @@ extends Node3D
 @export var min_money_per_wash = 30
 @export var max_money_per_wash = 80
 
+# --- NEW: PER-CAR DIRT POSITIONING ---
+@export_group("Car Dimensions (Dirt Placement)")
+@export var side_dist_x: float = 1.2    # How far left/right from center
+@export var side_height_y: Vector2 = Vector2(0.8, 1.3) # Min/Max height on doors
+@export var side_spread_z: Vector2 = Vector2(-0.5, 0.5) # Front/back spread on doors
+@export var rear_dist_z: float = 2.5    # How far back from center
+@export var rear_height_y: Vector2 = Vector2(0.7, 1.4) # Min/Max height on back
+@export var rear_width_x: Vector2 = Vector2(-0.5, 0.5) # Left/right spread on back
+
 @export_group("Dirt Visuals")
 @export var dirt_material: StandardMaterial3D 
 @export var dirt_scale_min = 0.5
@@ -73,7 +82,6 @@ func move_to_target(delta):
 		return
 	
 	global_position += direction * move_speed * delta
-	
 	var look_pos = target_position
 	look_pos.y = global_position.y
 	look_at(look_pos, Vector3.UP)
@@ -87,7 +95,7 @@ func set_speed(speed: float):
 	move_speed = speed
 
 #==================================
-# 🎨 DIRT VISUALS (Fixed Zones & Fade Logic)
+# 🎨 DIRT VISUALS (DYNAMIC POSITIONING)
 #==================================
 func create_dirt_spots():
 	if not dirt_material: return
@@ -107,47 +115,37 @@ func create_dirt_spots():
 		var final_scale = Vector3(scale_factor, scale_factor, scale_factor)
 		spot.scale = final_scale
 		
-		# --- ZONE-BASED PLACEMENT ---
 		var zone_selector = randi() % 3
 		match zone_selector:
-			0: # LEFT DOOR
-				spot.position = Vector3(-1.2, randf_range(0.8, 1.3), randf_range(-0.5, 0.5))
+			0: # LEFT SIDE
+				spot.position = Vector3(-side_dist_x, randf_range(side_height_y.x, side_height_y.y), randf_range(side_spread_z.x, side_spread_z.y))
 				spot.rotation_degrees = Vector3(0, -90, 0)
-			1: # RIGHT DOOR
-				spot.position = Vector3(1.1, randf_range(0.8, 1.3), randf_range(-0.5, 0.5))
+			1: # RIGHT SIDE
+				spot.position = Vector3(side_dist_x, randf_range(side_height_y.x, side_height_y.y), randf_range(side_spread_z.x, side_spread_z.y))
 				spot.rotation_degrees = Vector3(0, 90, 0)
-			2: # REAR (Pos Z due to 180-deg flip)
-				spot.position = Vector3(randf_range(-0.4, 0.5), randf_range(1.1, 1.9), 2.8)
+			2: # REAR
+				spot.position = Vector3(randf_range(rear_width_x.x, rear_width_x.y), randf_range(rear_height_y.x, rear_height_y.y), rear_dist_z)
 				spot.rotation_degrees = Vector3(0, 0, 0)
 		
 		dirt_container.add_child(spot)
 		
-		# Save in dictionary
 		dirt_spots.append({
 			"node": spot,
 			"original_scale": final_scale,
-			"material": spot_material,
-			"offset": randf() * 0.2 # Unique offset so they don't fade all at once
+			"material": spot_material
 		})
 
 func update_visual_dirt():
-	# Calculate global dirt percentage (1.0 to 0.0)
 	var global_dirt_pct = current_dirt_level / max_dirt_level
-	
 	for i in range(dirt_spots.size()):
 		var spot_data = dirt_spots[i]
 		var spot_node = spot_data["node"]
 		var spot_material = spot_data["material"]
-		
 		if not is_instance_valid(spot_node): continue
 
-		# NEW FADE LOGIC: Individual fade threshold
-		# Each spot stays at 1.0 alpha until the global dirt drops below its personal threshold
 		var my_threshold = float(i) / float(dirt_spots_count)
-		
 		if global_dirt_pct > my_threshold:
 			spot_node.visible = true
-			# Smoothly fade based on how far we are past the threshold
 			var local_fade = clamp((global_dirt_pct - my_threshold) * 5.0, 0.0, 1.0)
 			spot_material.albedo_color.a = local_fade
 		else:
@@ -166,7 +164,6 @@ func stop_washing():
 
 func on_wash_complete():
 	is_being_washed = false
-	# Ensure absolutely everything is hidden
 	for spot in dirt_spots:
 		spot["node"].visible = false
 	emit_signal("car_washed", money_to_earn)
@@ -178,17 +175,14 @@ func add_sparkle_effect():
 		var quad = QuadMesh.new()
 		quad.size = Vector2(0.1, 0.1)
 		sparkle.mesh = quad
-		
 		var mat = StandardMaterial3D.new()
 		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 		mat.albedo_color = Color(1, 1, 1, 0.8)
 		sparkle.set_surface_override_material(0, mat)
-		
 		sparkle.position = Vector3(randf_range(-1, 1), randf_range(0.8, 1.5), randf_range(-1.5, 1.5))
 		dirt_container.add_child(sparkle)
-		
 		var tween = create_tween().set_parallel(true)
 		tween.tween_property(sparkle, "scale", Vector3.ZERO, 0.5)
 		tween.tween_property(sparkle, "position:y", sparkle.position.y + 0.5, 0.5)
