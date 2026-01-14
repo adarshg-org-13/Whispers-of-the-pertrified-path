@@ -1,6 +1,6 @@
 [gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://q6qi56w1gwi3"]
 
-[ext_resource type="Texture2D" uid="uid://fuc7lbb0wb0m" path="res://Game images/dirt_png-removebg-preview.png" id="1_c0n8j"]
+[ext_resource type="Texture2D" uid="uid://c8mtavrif35eh" path="res://Game images/dirt_p1-removebg-preview.png" id="1_c0n8j"]
 
 [resource]
 resource_local_to_scene = true
@@ -8,3 +8,4 @@ transparency = 1
 shading_mode = 0
 albedo_texture = ExtResource("1_c0n8j")
 billboard_mode = 1
+billboard_keep_scale = true
