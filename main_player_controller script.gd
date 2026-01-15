@@ -20,6 +20,8 @@ const FOV_CHANGE = 1.5
 
 # Get the gravity from the project settings to be synced with RigidBody nodes.
 var gravity = 10.1
+#car 
+var can_move = true
 
 @onready var head = $Head
 @onready var camera = $Head/Camera3D
@@ -72,10 +74,19 @@ func _physics_process(delta):
 	var velocity_clamped = clamp(velocity.length(), 0.5, SPRINT_SPEED * 2)
 	var target_fov = BASE_FOV + FOV_CHANGE * velocity_clamped
 	camera.fov = lerp(camera.fov, target_fov, delta * 8.0)
-	
+	if not can_move:
+		return
 	move_and_slide()
 func _headbob(time) -> Vector3:
 	var pos = Vector3.ZERO
 	pos.y = sin(time * BOB_FREQ) * BOB_AMP
 	pos.x = cos(time * BOB_FREQ / 2) * BOB_AMP
 	return pos
+
+func get_facing_direction() -> Vector3:
+	return -global_transform.basis.z
+
+func set_can_move(value: bool):
+	can_move = value
+	if not can_move:
+		velocity = Vector3.ZERO
