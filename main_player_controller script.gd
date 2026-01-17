@@ -30,6 +30,7 @@ var can_move = true
 func _ready():
 	camera.current = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	add_to_group("player")
 
 func _process(delta: float) -> void:	
 	if ray_cast_3d.is_colliding():
@@ -90,3 +91,14 @@ func set_can_move(value: bool):
 	can_move = value
 	if not can_move:
 		velocity = Vector3.ZERO
+
+
+func enter_car():
+	set_physics_process(false)
+	hide()
+	camera.current = false
+	
+func leave_car():
+	set_physics_process(true)
+	show()
+	camera.current = true
