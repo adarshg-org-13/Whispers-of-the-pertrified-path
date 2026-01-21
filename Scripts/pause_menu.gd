@@ -7,13 +7,13 @@ func _ready():
 func resume():
 	hide()
 	get_tree().paused = false
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED  # Hide cursor for gameplay
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	$AnimationPlayer.play_backwards("blur")
 	
 func pause():
 	show()
 	get_tree().paused = true
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE  # Show cursor for menu
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	$AnimationPlayer.play("blur")
 
 func _unhandled_input(event):
@@ -32,6 +32,6 @@ func _on_restart_pressed():
 	get_tree().reload_current_scene()
 	
 func _on_quit_pressed():
-	get_tree().paused = false  # Unpause the game
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE  # Show cursor for main menu
+	get_tree().paused = false
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	get_tree().change_scene_to_file("res://main_menu.tscn")

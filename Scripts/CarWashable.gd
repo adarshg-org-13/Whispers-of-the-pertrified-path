@@ -1,8 +1,5 @@
 extends Node3D
 
-#==================================
-# 💲 WASHING SETTINGS (Enhanced)
-#==================================
 @export var max_dirt_level = 100.0
 @export var wash_speed = 10.0
 @export var dirt_spots_count = 30
@@ -11,14 +8,13 @@ extends Node3D
 @export var min_money_per_wash = 30
 @export var max_money_per_wash = 80
 
-# --- NEW: PER-CAR DIRT POSITIONING ---
 @export_group("Car Dimensions (Dirt Placement)")
-@export var side_dist_x: float = 1.2    # How far left/right from center
-@export var side_height_y: Vector2 = Vector2(0.8, 1.3) # Min/Max height on doors
-@export var side_spread_z: Vector2 = Vector2(-0.5, 0.5) # Front/back spread on doors
-@export var rear_dist_z: float = 2.5    # How far back from center
-@export var rear_height_y: Vector2 = Vector2(0.7, 1.4) # Min/Max height on back
-@export var rear_width_x: Vector2 = Vector2(-0.5, 0.5) # Left/right spread on back
+@export var side_dist_x: float = 1.2
+@export var side_height_y: Vector2 = Vector2(0.8, 1.3)
+@export var side_spread_z: Vector2 = Vector2(-0.5, 0.5)
+@export var rear_dist_z: float = 2.5
+@export var rear_height_y: Vector2 = Vector2(0.7, 1.4)
+@export var rear_width_x: Vector2 = Vector2(-0.5, 0.5)
 
 @export_group("Dirt Visuals")
 @export var dirt_material: StandardMaterial3D 
@@ -26,9 +22,6 @@ extends Node3D
 @export var dirt_scale_max = 1.2
 @export var dirt_quad_size = 0.3
 
-#==================================
-# ⚙️ INTERNAL VARIABLES
-#==================================
 var target_position = Vector3.ZERO
 var move_speed = 3.0
 var rotation_speed = 2.0
@@ -49,7 +42,6 @@ func _ready():
 	dirt_container = Node3D.new()
 	add_child(dirt_container)
 	money_to_earn = randi_range(min_money_per_wash, max_money_per_wash)
-	
 	create_dirt_spots()
 	current_dirt_level = max_dirt_level
 	update_visual_dirt()
@@ -63,13 +55,9 @@ func _process(delta):
 		current_dirt_level -= wash_speed * delta
 		current_dirt_level = max(0, current_dirt_level)
 		update_visual_dirt()
-		
 		if current_dirt_level <= 0:
 			on_wash_complete()
 
-#==================================
-# 🚶 MOVEMENT FUNCTIONS
-#==================================
 func move_to_target(delta):
 	var current_pos = global_position
 	var direction = (target_position - current_pos).normalized()
@@ -94,46 +82,33 @@ func set_target(pos: Vector3):
 func set_speed(speed: float):
 	move_speed = speed
 
-#==================================
-# 🎨 DIRT VISUALS (DYNAMIC POSITIONING)
-#==================================
 func create_dirt_spots():
 	if not dirt_material: return
-		
 	for i in range(dirt_spots_count):
 		var spot = MeshInstance3D.new()
 		var quad_mesh = QuadMesh.new()
 		quad_mesh.size = Vector2(dirt_quad_size, dirt_quad_size)
 		spot.mesh = quad_mesh
-		
 		var spot_material = dirt_material.duplicate()
 		spot_material.billboard_mode = BaseMaterial3D.BILLBOARD_DISABLED
 		spot_material.params_cull_mode = BaseMaterial3D.CULL_DISABLED
 		spot.set_surface_override_material(0, spot_material)
-
 		var scale_factor = randf_range(dirt_scale_min, dirt_scale_max)
 		var final_scale = Vector3(scale_factor, scale_factor, scale_factor)
 		spot.scale = final_scale
-		
 		var zone_selector = randi() % 3
 		match zone_selector:
-			0: # LEFT SIDE
+			0:
 				spot.position = Vector3(-side_dist_x, randf_range(side_height_y.x, side_height_y.y), randf_range(side_spread_z.x, side_spread_z.y))
 				spot.rotation_degrees = Vector3(0, -90, 0)
-			1: # RIGHT SIDE
+			1:
 				spot.position = Vector3(side_dist_x, randf_range(side_height_y.x, side_height_y.y), randf_range(side_spread_z.x, side_spread_z.y))
 				spot.rotation_degrees = Vector3(0, 90, 0)
-			2: # REAR
+			2:
 				spot.position = Vector3(randf_range(rear_width_x.x, rear_width_x.y), randf_range(rear_height_y.x, rear_height_y.y), rear_dist_z)
 				spot.rotation_degrees = Vector3(0, 0, 0)
-		
 		dirt_container.add_child(spot)
-		
-		dirt_spots.append({
-			"node": spot,
-			"original_scale": final_scale,
-			"material": spot_material
-		})
+		dirt_spots.append({"node": spot, "original_scale": final_scale, "material": spot_material})
 
 func update_visual_dirt():
 	var global_dirt_pct = current_dirt_level / max_dirt_level
@@ -142,7 +117,6 @@ func update_visual_dirt():
 		var spot_node = spot_data["node"]
 		var spot_material = spot_data["material"]
 		if not is_instance_valid(spot_node): continue
-
 		var my_threshold = float(i) / float(dirt_spots_count)
 		if global_dirt_pct > my_threshold:
 			spot_node.visible = true
@@ -152,9 +126,6 @@ func update_visual_dirt():
 			spot_node.visible = false
 			spot_material.albedo_color.a = 0.0
 
-#==================================
-# 🧼 WASHING LOGIC
-#==================================
 func start_washing():
 	if has_reached_destination and current_dirt_level > 0:
 		is_being_washed = true

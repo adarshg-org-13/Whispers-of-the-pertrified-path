@@ -1,171 +1,152 @@
 extends VehicleBody3D
 
-# Vehicle properties
 const MAX_ENGINE_FORCE = 700.0
 const MAX_BRAKE_FORCE = 10.0
-const MAX_STEER_LEFT = 1  # Left turn sensitivity
-const MAX_STEER_RIGHT = 1  # Right turn sensitivity (more sensitive now)
-const STEER_SPEED = 5.0  # Increased for faster return to center
+const MAX_STEER_LEFT = 1
+const MAX_STEER_RIGHT = 1
+const STEER_SPEED = 5.0
 
-# Camera properties
 const CAMERA_DISTANCE = 8.0
 const CAMERA_HEIGHT = 3.5
 const CAMERA_LERP_SPEED = 8.0
 const CAMERA_LOOK_AHEAD = 2.0
 
 @onready var input_label: Label3D = $Input_label
-# Camera is now a sibling, not a child
 @onready var camera: Camera3D = get_node_or_null("../Camera")
-# Instructions UI - adjust path to match your scene structure
 @onready var instructions: Control = get_node_or_null("../Control")
 
-# Reference all wheels explicitly
 @onready var wheel_fl: VehicleWheel3D = $WheelFL
 @onready var wheel_fr: VehicleWheel3D = $WheelFR
 @onready var wheel_rl: VehicleWheel3D = $WheelRL
 @onready var wheel_rr: VehicleWheel3D = $WheelRR
 
+@export_group("Audio")
+@export var engine_sound: AudioStreamPlayer3D
+@export var screech_sound: AudioStreamPlayer3D 
+@export var min_pitch = 0.8
+@export var max_pitch = 2.5
+@export var max_speed_for_pitch = 20.0
+@export var drift_threshold = 4.0 
+@export var pitch_smooth_speed = 5.0 
+@export var brake_required_time = 1.5 
+
 var with_player = false
-var current_steering = 0.0  # Track steering smoothly
+var current_steering = 0.0
+var current_engine_pitch = 1.0 
+var brake_timer = 0.0 
 
 func _ready() -> void:
 	input_label.hide()
+	if instructions: instructions.hide()
 	
-	# Hide instructions initially
-	if instructions:
-		instructions.hide()
-		print("Instructions found and hidden")
+	if engine_sound: 
+		engine_sound.stop()
+	if screech_sound: 
+		screech_sound.stop()
 	
-	# CRITICAL: Configure wheels with better stability settings
-	if wheel_fl:
-		wheel_fl.use_as_steering = true
-		wheel_fl.use_as_traction = true
-		wheel_fl.wheel_friction_slip = 2.5  # Lower = better stability
-		wheel_fl.suspension_stiffness = 80.0  # Higher = less bouncy
-		wheel_fl.suspension_travel = 0.2  # Shorter = more stable
-		wheel_fl.damping_compression = 0.9  # Higher = less oscillation
-		wheel_fl.damping_relaxation = 0.95  # Higher = smoother
-		wheel_fl.wheel_roll_influence = 0.1  # Lower = less tipping
+	var wheels = [wheel_fl, wheel_fr, wheel_rl, wheel_rr]
+	for i in range(wheels.size()):
+		var wheel = wheels[i]
+		if wheel:
+			wheel.use_as_steering = true if i < 2 else false
+			wheel.use_as_traction = true
+			wheel.wheel_friction_slip = 2.5
+			wheel.suspension_stiffness = 80.0
+			wheel.suspension_travel = 0.2
+			wheel.damping_compression = 0.9
+			wheel.damping_relaxation = 0.95
+			wheel.wheel_roll_influence = 0.1
 	
-	if wheel_fr:
-		wheel_fr.use_as_steering = true
-		wheel_fr.use_as_traction = true
-		wheel_fr.wheel_friction_slip = 2.5
-		wheel_fr.suspension_stiffness = 80.0
-		wheel_fr.suspension_travel = 0.2
-		wheel_fr.damping_compression = 0.9
-		wheel_fr.damping_relaxation = 0.95
-		wheel_fr.wheel_roll_influence = 0.1
-	
-	if wheel_rl:
-		wheel_rl.use_as_steering = false
-		wheel_rl.use_as_traction = true
-		wheel_rl.wheel_friction_slip = 2.5
-		wheel_rl.suspension_stiffness = 80.0
-		wheel_rl.suspension_travel = 0.2
-		wheel_rl.damping_compression = 0.9
-		wheel_rl.damping_relaxation = 0.95
-		wheel_rl.wheel_roll_influence = 0.1
-	
-	if wheel_rr:
-		wheel_rr.use_as_steering = false
-		wheel_rr.use_as_traction = true
-		wheel_rr.wheel_friction_slip = 2.5
-		wheel_rr.suspension_stiffness = 80.0
-		wheel_rr.suspension_travel = 0.2
-		wheel_rr.damping_compression = 0.9
-		wheel_rr.damping_relaxation = 0.95
-		wheel_rr.wheel_roll_influence = 0.1
-	
-	# Set up camera
-	if camera:
-		camera.set_as_top_level(true)
-	
-	print("Vehicle ready! Mass: ", mass)
+	if camera: camera.set_as_top_level(true)
 
 func _physics_process(delta: float) -> void:
-	# Always update camera if player is in car
 	if camera and with_player:
 		_update_camera(delta)
 	
+	_handle_car_audio(delta)
+
 	if not with_player:
-		# COMPLETE STOP when player is not in car
 		engine_force = 0
 		brake = MAX_BRAKE_FORCE
 		steering = 0
 		current_steering = 0
-		
-		# Force velocity to zero to prevent drifting
 		linear_velocity = Vector3.ZERO
 		angular_velocity = Vector3.ZERO
 		return
 	
-	# Get input - Correct mapping
 	var input_dir := Input.get_vector("right", "left", "up", "down")
-	
-	# Asymmetric steering - different sensitivity for left vs right
 	var target_steering = 0.0
-	if input_dir.x < 0:  # Turning left (A key)
+	
+	if input_dir.x < 0:
 		target_steering = input_dir.x * MAX_STEER_LEFT
-	elif input_dir.x > 0:  # Turning right (D key)
+	elif input_dir.x > 0:
 		target_steering = input_dir.x * MAX_STEER_RIGHT
 	
-	# Smooth steering with gradual return to center
 	current_steering = lerp(current_steering, target_steering, STEER_SPEED * delta)
 	steering = current_steering
 	
-	# Engine force (forward/backward - up/down keys)
-	if input_dir.y < 0: # Forward (W or Up)
+	if input_dir.y < 0:
 		engine_force = MAX_ENGINE_FORCE
 		brake = 0
-	elif input_dir.y > 0: # Backward (S or Down)
+	elif input_dir.y > 0:
 		engine_force = -MAX_ENGINE_FORCE * 0.5
 		brake = 0
 	else:
-		# No input - apply light brake and no engine
 		engine_force = 0
 		brake = MAX_BRAKE_FORCE * 0.3
 	
-	# Handbrake
 	if Input.is_action_pressed("ui_accept"):
 		brake = MAX_BRAKE_FORCE
 		engine_force = 0
 
-func _update_camera(delta: float) -> void:
-	if not camera:
+func _handle_car_audio(delta: float):
+	if not with_player:
+		if engine_sound and engine_sound.playing: engine_sound.stop()
+		if screech_sound and screech_sound.playing: screech_sound.stop()
+		brake_timer = 0.0
 		return
-	
-	# Get the car's transform
+
+	if engine_sound:
+		if not engine_sound.playing: engine_sound.play()
+		var speed = linear_velocity.length()
+		var target_pitch = lerp(min_pitch, max_pitch, clamp(speed / max_speed_for_pitch, 0.0, 1.0))
+		current_engine_pitch = lerp(current_engine_pitch, target_pitch, pitch_smooth_speed * delta)
+		engine_sound.pitch_scale = current_engine_pitch
+
+	if screech_sound:
+		var lateral_velocity = global_transform.basis.x.dot(linear_velocity)
+		var is_hard_braking = Input.is_action_pressed("ui_accept") or Input.is_action_pressed("down")
+		var is_skidding = (abs(lateral_velocity) > drift_threshold or (is_hard_braking and linear_velocity.length() > 5.0))
+		
+		if is_skidding:
+			brake_timer += delta
+			if brake_timer >= brake_required_time:
+				if not screech_sound.playing: 
+					screech_sound.play()
+		else:
+			brake_timer = 0.0
+			if screech_sound.playing: 
+				screech_sound.stop()
+
+func _update_camera(delta: float) -> void:
+	if not camera: return
 	var car_transform = global_transform
-	
-	# Calculate the direction behind the car
 	var back_direction = -car_transform.basis.z
 	var up_direction = Vector3.UP
-	
-	# Target position: behind and above the car
 	var target_position = global_position + (back_direction * CAMERA_DISTANCE) + (up_direction * CAMERA_HEIGHT)
-	
-	# Smoothly move camera to target position
 	camera.global_position = camera.global_position.lerp(target_position, CAMERA_LERP_SPEED * delta)
-	
-	# Calculate the point to look at (slightly ahead of car and higher)
 	var look_at_position = global_position + (car_transform.basis.z * CAMERA_LOOK_AHEAD) + Vector3.UP * 1.0
-	
-	# Make camera look at that point
 	camera.look_at(look_at_position, Vector3.UP)
 
 func _on_area_3d_body_entered(body: Node3D) -> void:
-	if body.is_in_group("player"):
-		input_label.show()
+	if body.is_in_group("player"): input_label.show()
 
 func _on_area_3d_body_exited(body: Node3D) -> void:
-	if body.is_in_group("player"):
-		input_label.hide()
+	if body.is_in_group("player"): input_label.hide()
 
 func _input(event: InputEvent) -> void:
 	var can_enter = input_label.visible and not with_player 
 	var can_leave = with_player
-	
 	if Input.is_action_just_pressed("interact") and can_enter:
 		_enter_car()
 	elif Input.is_action_just_pressed("interact") and can_leave:
@@ -173,56 +154,31 @@ func _input(event: InputEvent) -> void:
 
 func _enter_car() -> void:
 	with_player = true
-	print("Player entered car!")
-	
-	# Show instructions when entering car
-	if instructions:
-		instructions.show()
-		print("Instructions shown")
-	
+	if instructions: instructions.show()
 	var player = get_tree().get_first_node_in_group("player")
 	if player:
 		player.enter_car()
-		if player.has_method("hide"):
-			player.hide()
-	
+		if player.has_method("hide"): player.hide()
 	input_label.hide()
-	
-	# Initialize camera position
 	if camera:
 		var back_dir = -global_transform.basis.z
 		camera.global_position = global_position + (back_dir * CAMERA_DISTANCE) + Vector3.UP * CAMERA_HEIGHT
-	
-	# Reset steering when entering
 	current_steering = 0.0
 	steering = 0.0
 
 func _leave_car() -> void:
 	with_player = false
-	print("Player left car!")
-	
-	# Hide instructions when leaving car
-	if instructions:
-		instructions.hide()
-		print("Instructions hidden")
-	
-	# FIRST: Stop the car completely
+	if instructions: instructions.hide()
 	engine_force = 0
 	brake = MAX_BRAKE_FORCE
 	steering = 0
 	current_steering = 0
-	
-	# Force all velocities to zero
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
-	
-	# THEN: Handle player
+	brake_timer = 0.0
 	var player = get_tree().get_first_node_in_group("player")
 	if player:
 		player.leave_car()
-		# Position player next to the car (driver side)
 		var exit_offset = global_transform.basis.x * 3.0
 		player.global_position = global_position + exit_offset + Vector3.UP * 0.5
-		
-		if player.has_method("show"):
-			player.show()
+		if player.has_method("show"): player.show()

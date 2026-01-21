@@ -7,6 +7,8 @@ extends Node
 @export_group("UI/FX")
 @export var water_particles_scene: PackedScene 
 @export var money_sound: AudioStreamPlayer 
+@export var wash_sound: AudioStreamPlayer # New: Assign your washing SFX here
+@export var shake_intensity = 0.05 # New: Subtle camera shake
 
 var key_hold_timer = 0.0
 var current_washable_car = null
@@ -15,11 +17,13 @@ var is_washing = false
 var ui: CanvasLayer 
 var active_water_particles: GPUParticles3D = null
 var target_progress_value = 0.0
+var camera: Camera3D = null
 
 func _ready():
 	await get_tree().process_frame
 	var player = get_parent()
 	ui = player.get_node_or_null("UI")
+	camera = get_viewport().get_camera_3d()
 	update_money_ui()
 
 func find_nearest_node3d_parent(start_node: Node) -> Node3D:
@@ -41,12 +45,19 @@ func _process(delta):
 				if key_hold_timer >= hold_duration:
 					start_washing()
 					key_hold_timer = 0.0
+			else:
+				apply_camera_shake()
 	else:
 		if is_washing:
 			stop_washing()
 		if key_hold_timer > 0.0:
 			key_hold_timer = 0.0
 			update_ui_display()
+
+func apply_camera_shake():
+	if camera:
+		camera.h_offset = randf_range(-shake_intensity, shake_intensity)
+		camera.v_offset = randf_range(-shake_intensity, shake_intensity)
 
 func _physics_process(delta):
 	if is_washing and current_washable_car and ui:
@@ -95,6 +106,10 @@ func start_washing():
 	if not current_washable_car or is_washing: return
 	
 	is_washing = true
+	
+	if wash_sound:
+		wash_sound.play()
+		
 	if current_washable_car.has_method("start_washing"):
 		current_washable_car.start_washing()
 	
@@ -126,6 +141,13 @@ func start_washing():
 func stop_washing():
 	if not is_washing: return
 	is_washing = false
+	
+	if wash_sound:
+		wash_sound.stop()
+		
+	if camera:
+		camera.h_offset = 0
+		camera.v_offset = 0
 	
 	if active_water_particles and is_instance_valid(active_water_particles):
 		active_water_particles.emitting = false
