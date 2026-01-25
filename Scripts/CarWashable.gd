@@ -167,3 +167,5 @@ func is_dirty():
 
 func can_be_washed():
 	return has_reached_destination and current_dirt_level > 0
+
+#END

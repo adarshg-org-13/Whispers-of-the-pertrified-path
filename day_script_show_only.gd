@@ -1,14 +1,14 @@
 extends Label
 
-var current_day: int = 0
-var game_hours: int = 7
+var current_day: int = 1
+var game_hours: int = 8    
 var game_minutes: int = 0
 var game_seconds: float = 0.0
 
-const GAME_SPEED: float = 72.0
+const GAME_SPEED: float = 60.0 
 
 func _ready():
-	update_day_display()
+	update_display()
 
 func _process(delta):
 	game_seconds += delta * GAME_SPEED
@@ -21,14 +21,15 @@ func _process(delta):
 		game_hours += int(game_minutes / 60)
 		game_minutes = game_minutes % 60
 	
-	if game_hours >= 24:
+	if game_hours >= 22:
 		current_day += 1
-		game_hours = 0
-		update_day_display()
+		game_hours = 8 
+		game_minutes = 0
+		game_seconds = 0
+		
+	update_display()
 
-func update_day_display():
-	text = "Day %d" % current_day
+func update_display():
+	text = "Day %d | %02d:%02d" % [current_day, game_hours, game_minutes]
 
-func set_day(day: int):
-	current_day = day
-	update_day_display()
+#END

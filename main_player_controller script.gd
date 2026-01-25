@@ -8,16 +8,13 @@ const SPRINT_SPEED = 8.0
 const JUMP_VELOCITY = 5
 const SENSITIVITY = 0.004
 
-# Bob variables (Restored)
 const BOB_FREQ = 2.4
 const BOB_AMP = 0.08
 var t_bob = 0.0
 
-#fov variables
 const BASE_FOV = 75.0
 const FOV_CHANGE = 1.5
 
-#audio variables
 @export_group("Audio")
 @export var footstep_audio: AudioStreamPlayer3D 
 @export var step_distance: float = 2.2 
@@ -26,9 +23,7 @@ const FOV_CHANGE = 1.5
 
 var distance_walked: float = 0.0
 
-# Get the gravity from the project settings
 var gravity = 10.1
-#car 
 var can_move = true
 
 @onready var head = $Head
@@ -64,14 +59,12 @@ func _physics_process(delta):
 	if Input.is_action_just_pressed("jump") and is_on_floor():
 		velocity.y = JUMP_VELOCITY
 	
-	# Handle Sprint
 	var is_sprinting = Input.is_action_pressed("sprint")
 	speed = SPRINT_SPEED if is_sprinting else WALK_SPEED
 
 	var input_dir = Input.get_vector("left", "right", "up", "down")
 	var direction = (head.transform.basis * transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	
-	# Logic check for movement
 	var has_input = input_dir.length() > 0.1
 	var is_moving = has_input and is_on_floor() and can_move
 	
@@ -82,23 +75,19 @@ func _physics_process(delta):
 			
 			if can_move:
 				_handle_footsteps(delta, is_sprinting)
-				# Only advance bob timer when actually moving
 				t_bob += delta * velocity.length()
 				camera.transform.origin = _headbob(t_bob)
 		else:
-			# INSTANT STOP: Kill velocity and snap camera back to center
 			velocity.x = 0
 			velocity.z = 0
 			distance_walked = 0
-			t_bob = 0.0 # Reset bob timer
-			camera.transform.origin = Vector3.ZERO # Snap camera to center instantly
+			t_bob = 0.0 
+			camera.transform.origin = Vector3.ZERO 
 	else:
 		velocity.x = lerp(velocity.x, direction.x * speed, delta * 3.0)
 		velocity.z = lerp(velocity.z, direction.z * speed, delta * 3.0)
-		# While in air, slowly return camera to center
 		camera.transform.origin = camera.transform.origin.lerp(Vector3.ZERO, delta * 5.0)
 
-	# Footstep Audio Lock
 	if footstep_audio:
 		if not is_moving:
 			footstep_audio.volume_db = -80.0
@@ -107,7 +96,6 @@ func _physics_process(delta):
 		else:
 			footstep_audio.volume_db = sprint_volume_db if is_sprinting else walk_volume_db
 
-	# FOV Scaling
 	var velocity_clamped = clamp(velocity.length(), 0.5, SPRINT_SPEED * 2)
 	var target_fov = BASE_FOV + FOV_CHANGE * velocity_clamped
 	camera.fov = lerp(camera.fov, target_fov, delta * 8.0)
@@ -128,7 +116,6 @@ func _handle_footsteps(delta: float, sprinting: bool):
 				footstep_audio.play()
 			distance_walked = 0.0
 
-# Restored Headbob Function
 func _headbob(time) -> Vector3:
 	var pos = Vector3.ZERO
 	pos.y = sin(time * BOB_FREQ) * BOB_AMP
@@ -155,3 +142,5 @@ func set_can_move(value: bool):
 		camera.transform.origin = Vector3.ZERO
 		if footstep_audio: 
 			footstep_audio.volume_db = -80.0
+
+#END

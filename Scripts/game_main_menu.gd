@@ -8,3 +8,5 @@ func _on_settings_pressed() -> void:
 	
 func _on_quit_game_pressed() -> void:
 	get_tree().quit()
+
+#END

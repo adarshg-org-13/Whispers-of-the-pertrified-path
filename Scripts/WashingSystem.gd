@@ -217,3 +217,6 @@ func show_money_popup(amount):
 		await tween.finished
 		popup.visible = false
 		popup.position.y += 50
+
+
+#END

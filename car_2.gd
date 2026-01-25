@@ -182,3 +182,5 @@ func _leave_car() -> void:
 		var exit_offset = global_transform.basis.x * 3.0
 		player.global_position = global_position + exit_offset + Vector3.UP * 0.5
 		if player.has_method("show"): player.show()
+
+#END

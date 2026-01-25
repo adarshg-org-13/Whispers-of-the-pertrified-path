@@ -66,3 +66,6 @@ func reset_car():
 	global_transform.basis = Basis()
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
+
+
+#END

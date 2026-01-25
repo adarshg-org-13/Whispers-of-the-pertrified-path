@@ -66,3 +66,5 @@ func _on_car_reached_exit(car):
 		car.queue_free()
 	current_car = null
 	can_spawn = true
+
+#END

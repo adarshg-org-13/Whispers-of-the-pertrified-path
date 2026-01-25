@@ -17,3 +17,5 @@ func _ready():
 	var prompt_label = get_node_or_null("PromptLabel")
 	if prompt_label:
 		prompt_label.text = ""
+
+#END
